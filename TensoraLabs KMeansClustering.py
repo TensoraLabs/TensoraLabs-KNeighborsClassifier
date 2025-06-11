@@ -5,6 +5,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import *
 import matplotlib.pyplot as plt
+import joblib
+import io
 
 st.title('TensoraLabs - KNN Classifier')
 st.write('Where ideas are built.')
@@ -15,7 +17,6 @@ if 'X_columns' not in st.session_state:
     st.session_state.X_columns = None
 if 'target_categories' not in st.session_state:
     st.session_state.target_categories = None
-
 
 file = st.file_uploader("Upload a CSV File", type='.csv')
 if file:
@@ -52,9 +53,18 @@ if file:
         st.session_state.model = model
 
         predictions_ = model.predict(X_test)
-
         acc = f1_score(y_test, predictions_, average='weighted')
-        st.success(f"Model Accuracy: {acc:.4f} ")
+        st.success(f"Model Accuracy: {acc:.4f}")
+
+        model_buffer = io.BytesIO()
+        joblib.dump(model, model_buffer)
+        model_buffer.seek(0)
+        st.download_button(
+            label="Download Trained Model",
+            data=model_buffer,
+            file_name="knn_model.pkl",
+            mime="application/octet-stream"
+        )
 
         if X_enc.shape[1] == 1:
             plt.figure(figsize=(8, 5))
